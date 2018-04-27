@@ -157,7 +157,13 @@ PHP_FUNCTION(sample_hello_world)
 	// if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
 	// 	return;
 	// }
-	ZVAL_STRINGL(return_value, "hello", 5);
+	auto long sum = 0;
+	long n = 1000000000, i;
+	for (i = 0; i < n; ++i){
+		/* code */
+		sum += i;
+	}
+	RETVAL_LONG(sum);
 	return;
 }
 
