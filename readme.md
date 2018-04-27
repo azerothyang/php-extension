@@ -1,4 +1,4 @@
-
+```
 ZVAL_NULL(return_value) RETVAL_NULL()
 ZVAL_BOOL(return_value, bval) RETVAL_BOOL(bval)
 ZVAL_TRUE(return_value) RETVAL_TRUE
@@ -10,3 +10,4 @@ ZVAL_STRINGL(return_value, str,
 len, dup)
 RETVAL_STRINGL(str,len,dup)
 ZVAL_RESOURCE(return_value, rval) RETVAL_RESOURCE(rval)
+```
