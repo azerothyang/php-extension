@@ -1,3 +1,35 @@
+### zval type
+```
+typedef struct _zval_struct {
+	zvalue_value value;
+	zend_uint refcount;
+	zend_uchar type;
+	zend_uchar is_ref;
+} zval;
+
+typedef union _zvalue_value {
+	long lval;
+	double dval;
+	struct {
+	char *val;
+	int len;
+	} str;
+	HashTable *ht;
+	zend_object_value obj;
+} zvalue_value;
+
+
+IS_NULL
+IS_BOOL
+IS_LONG
+IS_DOUBLE
+IS_STRING
+IS_ARRAY
+IS_OBJECT
+IS_RESOURCE
+```
+
+
 ### Zend Macros
 ```
 Z_TYPE_P(*zval) //zval type 
@@ -41,13 +73,31 @@ ZVAL_RESOURCE(*zval return_value, rval)
 #define RETURN_TRUE						{ RETVAL_TRUE; return; }
 ```
 
-###php_printf
+### php_printf
 ```
 long foo=88;
 php_printf("The integer value of the parameter you passed is: %ld\n", foo);
 ```
 
-###zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len)
+###	PHPWRITE(char* name, int name_len)
+
+
+### zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len)
+
+#### Type Modifier 		Meaning
+'|' 				Optional parameters follow. When this is specified, all
+					previous parameters are considered required and all
+					subsequent parameters are considered optional.
+
+'!' 				If a NULL is passed for the parameter corresponding to the
+					preceding argument specifier, the internal variable provided
+					will be set to an actual NULL pointer as opposed to an IS_NULL zval.
+
+'/' 				If the parameter corresponding to the preceding argument
+					specifier is in a copy-on-write reference set, it will be
+					automatically separated into a new zval with is_ref==0, and
+					refcount==1.
+
 ```
 first-arg:
 	an int representing the number of arguments actually
@@ -66,12 +116,60 @@ second-arg:
 	Z Dereferenced non-specific zval; zval**
 
 example:
-	long foo;
-		if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &foo) == FAILURE) {
+	long type parameter:
+	{
+		long foo;
+			if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &foo) == FAILURE) {
+				RETURN_NULL();
+			}
+			php_printf("The integer value of the parameter you passed is: %ld\n", foo);
+			RETURN_TRUE;
+	}
+	char 
+	{
+		char *name;
+		int name_len;
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name, &name_len) == FAILURE) {
 			RETURN_NULL();
 		}
-		php_printf("The integer value of the parameter you passed is: %ld\n", foo);
-		RETURN_TRUE;
+		php_printf("Hello ");
+		PHPWRITE(name, name_len);
+		php_printf("!\n");
+	}
+	serveral parameters
+	{
+		char *name;
+		int name_len;
+		char *greeting;
+		int greeting_len;
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss", &name, &name_len, &greeting, &greeting_len) == FAILURE) {
+			RETURN_NULL();
+		}
+		php_printf("Hello ");
+		PHPWRITE(greeting, greeting_len);
+		php_printf(" ");
+		PHPWRITE(name, name_len);
+		php_printf("!\n");
+	}
+	
+	Optional Parameters
+	{
+		char *name;
+		int name_len;
+		char *greeting = "Mr./Mrs.";
+		int greeting_len = sizeof("Mr./Mrs.") - 1;
+		if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s", &name, &name_len, &greeting, &greeting_len) == FAILURE) {
+			RETURN_NULL();
+		}
+		php_printf("Hello ");
+		PHPWRITE(greeting, greeting_len);
+		php_printf(" ");
+		PHPWRITE(name, name_len);
+		php_printf("!\n");
+	}
+
+
+	
 ```
 
 ### https://blog.csdn.net/treesky/article/details/46432541
