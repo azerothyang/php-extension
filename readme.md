@@ -107,7 +107,7 @@ second-arg:
 	b Boolean; zend_bool
 	l Integer; long
 	d Floating point; double
-	s String char*; int
+	s String ;char*, int
 	r Resource; zval*
 	a Array; zval*
 	o Object instance; zval*
