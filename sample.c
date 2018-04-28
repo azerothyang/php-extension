@@ -167,11 +167,42 @@ PHP_FUNCTION(sample_hello_world)
 	return;
 }
 
+PHP_FUNCTION(sample_array_range)
+{
+	int i;
+	/*return an array from 0-999*/
+	array_init(return_value);
+	for (i = 0; i < 1000; ++i)
+	{
+		/* code */
+		add_next_index_long(return_value, i);
+	}
+	return;
+}
+
+PHP_FUNCTION(sample_get_long)
+{
+	long max, i;
+	register long sum = 0;
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &max) == FAILURE) {
+		RETURN_NULL();
+	}
+	php_printf("get right long data: %ld\n", max);
+	for (i = 0; i <= max; ++i){
+		/* code */
+		sum += i;
+	}
+	RETURN_LONG(sum);
+}
+
+
 
 
 const zend_function_entry sample_functions[] = {
 	PHP_FE(confirm_sample_compiled,	NULL)		/* For testing, remove later. */
 	PHP_FE(sample_hello_world,	NULL)		/*sample_hello_world*/
+	PHP_FE(sample_array_range,	NULL)		/*sample_array_range*/
+	PHP_FE(sample_get_long,	NULL)		/*sample_get_long*/
 	PHP_FE_END	/* Must be the last line in sample_functions[] */
 };
 /* }}} */
