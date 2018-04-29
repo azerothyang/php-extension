@@ -197,12 +197,74 @@ PHP_FUNCTION(sample_get_long)
 
 
 
+// 传值
+int callback(zval *val) {
+	/* Duplicate the zval so that
+* the original's contents are not destroyed */
+  zval tmpcopy = *val;
+  // ZVAL_COPY(&tmpcopy, val);
+
+  convert_to_string(&tmpcopy);
+
+  php_printf("The value is: [ ");
+  PHPWRITE(Z_STRVAL(tmpcopy), Z_STRLEN(tmpcopy));
+  php_printf(" ]\n");
+
+  zval_dtor(&tmpcopy); // 主动释放临时 zval，不然会内存泄漏
+  return ZEND_HASH_APPLY_KEEP;
+}
+
+int callback_args(zval *val, int num_args, va_list args, zend_hash_key *hash_key) {
+  zval zvaltmp = *val;
+  convert_to_string(&zvaltmp);
+ 
+  // 打印键值对结果
+  php_printf("The key is : [ ");
+  if (hash_key->key) {
+  	/* String Key / Associative */
+    PHPWRITE(ZSTR_VAL(hash_key->key), ZSTR_LEN(hash_key->key));
+  } else {
+  	/* Numeric Key */
+    php_printf("%ld", hash_key->h);
+  }
+  php_printf(" ], the value is: [ ");
+  PHPWRITE(Z_STRVAL(zvaltmp), Z_STRLEN(zvaltmp));
+  php_printf(" ]\n");
+ 
+  zval_dtor(&zvaltmp); // 主动释放临时 zval，不然会内存泄漏
+  return ZEND_HASH_APPLY_KEEP;
+}
+
+PHP_FUNCTION(sample_foreach_array)
+{
+	zval *arr;
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "a", &arr) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	// 遍历值
+	php_printf("value list is :\n");
+	zend_hash_apply(Z_ARRVAL_P(arr), callback);
+
+
+	php_printf("key => value list is :\n");
+	// 遍历键和值
+  	zend_hash_apply_with_arguments(Z_ARRVAL_P(arr), callback_args, 0);
+	return;
+}
+
+
+
+
+
+
 
 const zend_function_entry sample_functions[] = {
 	PHP_FE(confirm_sample_compiled,	NULL)		/* For testing, remove later. */
 	PHP_FE(sample_hello_world,	NULL)		/*sample_hello_world*/
 	PHP_FE(sample_array_range,	NULL)		/*sample_array_range*/
 	PHP_FE(sample_get_long,	NULL)		/*sample_get_long*/
+	PHP_FE(sample_foreach_array,	NULL)		/*sample_get_long*/
 	PHP_FE_END	/* Must be the last line in sample_functions[] */
 };
 /* }}} */
