@@ -42,8 +42,22 @@ Z_STRLEN_P(zval*)
 
 
 //zend_string init
-(zend_string*) zend_string_init(char *, int strLen, 0);
+zend_string* zend_string_init(char *, int strLen, 0);
 zend_string_release(zend_string *);
+
+zend_string* zval_get_string(zval*);
+struct _zend_string {
+    zend_refcounted_h gc; /*gc信息*/
+    zend_ulong        h;  /* hash value */
+    size_t            len; /*字符串长度*/
+    char              val[1]; /*字符串起始地址*/
+};
+#define ZSTR_VAL(zstr)  (zstr)->val
+#define ZSTR_LEN(zstr)  (zstr)->len
+#define ZSTR_H(zstr)    (zstr)->h
+#define ZSTR_HASH(zstr) zend_string_hash_val(zstr)
+
+
 
 RETVAL_NULL() //set return_value null, but not return control to the calling scope
 RETVAL_BOOL(bval)

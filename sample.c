@@ -245,7 +245,8 @@ PHP_FUNCTION(sample_foreach_array)
 	}
 	// 获取hash数组值
 	if(val = zend_hash_find(Z_ARRVAL_P(arr), arKey)){
-		php_printf("y=>%s\n", Z_STRVAL_P(val));
+		zend_string *zstr = zval_get_string(val);
+		php_printf("y=>%s\n", ZSTR_VAL(zstr));
 	}
 	else{
 		php_printf("This is my string: %s\n", ZSTR_VAL(arKey));	
