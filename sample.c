@@ -237,10 +237,20 @@ int callback_args(zval *val, int num_args, va_list args, zend_hash_key *hash_key
 
 PHP_FUNCTION(sample_foreach_array)
 {
-	zval *arr;
+	zval *arr, *val;
+	zend_string *arKey;
+	arKey = zend_string_init("y", strlen("y"), 0);
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "a", &arr) == FAILURE) {
 		RETURN_NULL();
 	}
+	// 获取hash数组值
+	if(val = zend_hash_find(Z_ARRVAL_P(arr), arKey)){
+		php_printf("y=>%s\n", Z_STRVAL_P(val));
+	}
+	else{
+		php_printf("This is my string: %s\n", ZSTR_VAL(arKey));	
+	}
+
 
 	// 遍历值
 	php_printf("value list is :\n");

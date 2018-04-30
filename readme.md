@@ -32,13 +32,18 @@ IS_RESOURCE
 
 ### Zend Macros
 ```
-Z_TYPE_P(*zval) //zval type 
+Z_TYPE_P(zval*) //zval type 
 
-Z_TYPE_PP(**zval) //zval type 
+Z_TYPE_PP(zval**) //zval type 
+MAKE_STD_ZVAL(zval*) //这个宏会用内核的方式来申请一块内存并将其地址付给pzv，并初始化它的refcount和is_ref连个属性，更棒的是，它不但会自动的处理内存不足问题，还会在内存中选个最优的位置来申请。
+Z_LVAL_P(zval*) //zval long value
+Z_LVAL_PP(zval**) //zval long value
+Z_STRLEN_P(zval*)
 
-Z_LVAL_P(*zval) //zval long value
-Z_LVAL_PP(**zval) //zval long value
-Z_STRLEN_P(*zval)
+
+//zend_string init
+(zend_string*) zend_string_init(char *, int strLen, 0);
+zend_string_release(zend_string *);
 
 RETVAL_NULL() //set return_value null, but not return control to the calling scope
 RETVAL_BOOL(bval)
@@ -50,15 +55,15 @@ RETVAL_STRING(str, dup)
 RETVAL_STRINGL(str,len,dup)
 RETVAL_RESOURCE(rval)
 
-ZVAL_NULL(*zval return_value) //set return_value null
-ZVAL_BOOL(*zval return_value, bval) 
-ZVAL_TRUE(*zval return_value) 
-ZVAL_FALSE(*zval return_value) 
-ZVAL_LONG(*zval return_value, lval) 
-ZVAL_DOUBLE(*zval return_value, dval) 
-ZVAL_STRING(*zval return_value, str, dup) 
-ZVAL_STRINGL(*zval return_value, str, len, dup)
-ZVAL_RESOURCE(*zval return_value, rval) 
+ZVAL_NULL(zval* return_value) //set return_value null
+ZVAL_BOOL(zval* return_value, bval) 
+ZVAL_TRUE(zval* return_value) 
+ZVAL_FALSE(zval* return_value) 
+ZVAL_LONG(zval* return_value, lval) 
+ZVAL_DOUBLE(zval* return_value, dval) 
+ZVAL_STRING(zval* return_value, str, dup) 
+ZVAL_STRINGL(zval* return_value, str, len, dup)
+ZVAL_RESOURCE(zval* return_value, rval) 
 
 #define RETURN_RESOURCE(l)              { RETVAL_RESOURCE(l); return; } //set return_value and return immediately
 #define RETURN_BOOL(b)                  { RETVAL_BOOL(b); return; }
@@ -80,6 +85,69 @@ php_printf("The integer value of the parameter you passed is: %ld\n", foo);
 ```
 
 ###	PHPWRITE(char* name, int name_len)
+
+
+### Zend Hash API
+```
+int zend_hash_init(HashTable *ht, uint nSize, hash_func_t pHashFunction,
+dtor_func_t pDestructor, zend_bool persistent)
+int zend_hash_add(HashTable *ht, char *arKey, uint nKeyLen, void **pData, uint nDataSize, void *pDest);
+int zend_hash_update(HashTable *ht, char *arKey, uint nKeyLen, void *pData, uint nDataSize, void **pDest);
+int zend_hash_index_update(HashTable *ht, ulong h, void *pData, uint nDataSize, void **pDest);
+int zend_hash_next_index_insert(HashTable *ht, void *pData, uint nDataSize, void **pDest);
+ulong nextid = zend_hash_next_free_element(HashTable *ht);
+
+//they return 1 to indicate that the requested key/index exists or 0 to indicate absence
+int zend_hash_exists(HashTable *ht, char *arKey, uint nKeyLen);
+int zend_hash_index_exists(HashTable *ht, ulong h);
+
+//they return SUCCESS to indicate that the requested key/index exists or FAILURE to indicate FAIL
+zval* ZEND_FASTCALL zend_hash_find(const HashTable *ht, zend_string *key)
+int zend_hash_index_find(HashTable *ht, ulong h, void **pData);
+
+examples:
+{
+	HashTable *ht, 
+	sample_data *data1;
+	sample_data *data2;
+	ulong targetID = zend_hash_next_free_element(ht);
+	if (zend_hash_index_update(ht, targetID,
+		data1, sizeof(sample_data), NULL) == FAILURE) {
+		/* Should never happen */
+		return;
+	}
+	if(zend_hash_index_find(ht, targetID, (void **)&data2) == FAILURE) {
+		/* Very unlikely since we just added this element */
+		return;
+	}
+
+}
+
+//Quick Population and Recall
+ulong zend_get_hash_value(char *arKey, uint nKeyLen); //get hashval
+int zend_hash_quick_add(HashTable *ht, char *arKey, uint nKeyLen, ulong hashval, void *pData, uint nDataSize, void **pDest);
+int zend_hash_quick_update(HashTable *ht, char *arKey, uint nKeyLen, ulong hashval,
+void *pData, uint nDataSize, void **pDest);
+int zend_hash_quick_find(HashTable *ht, char *arKey, uint nKeyLen, ulong hashval, void **pData);
+int zend_hash_quick_exists(HashTable *ht, char *arKey, uint nKeyLen, ulong hashval);
+
+```
+
+
+### Array Api
+```
+array_init(zval *arrval)
+add_assoc_null(zval *aval, char *key);
+add_assoc_bool(zval *aval, char *key, zend_bool bval);
+add_assoc_long(zval *aval, char *key, long lval);
+add_assoc_double(zval *aval, char *key, double dval);
+add_assoc_string(zval *aval, char *key, char *strval, int dup);
+add_assoc_stringl(zval *aval, char *key,
+char *strval, uint strlen, int dup);
+add_assoc_zval(zval *aval, char *key, zval *value);
+add_next_index_long(zval*, long);
+add_index_zval(zval *zval, ulong index, zval *value);
+```
 
 
 ### zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len)
