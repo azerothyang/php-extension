@@ -154,11 +154,11 @@ PHP_FUNCTION(sample_hello_world)
 	// size_t arg_len, len;
 	// zend_string *strg;
 
-	// if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
-	// 	return;
-	// }
-	auto long sum = 0;
-	long n = 1000000000, i;
+	long n, i;
+	register long sum = 0;
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &n) == FAILURE) {
+		return;
+	}
 	for (i = 0; i < n; ++i){
 		/* code */
 		sum += i;
@@ -238,29 +238,34 @@ int callback_args(zval *val, int num_args, va_list args, zend_hash_key *hash_key
 PHP_FUNCTION(sample_foreach_array)
 {
 	zval *arr, *val;
-	zend_string *arKey;
+	zend_string *arKey, *key;
+	zend_ulong numKey;
 	arKey = zend_string_init("y", strlen("y"), 0);
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "a", &arr) == FAILURE) {
 		RETURN_NULL();
 	}
 	// 获取hash数组值
-	if(val = zend_hash_find(Z_ARRVAL_P(arr), arKey)){
-		zend_string *zstr = zval_get_string(val);
-		php_printf("y=>%s\n", ZSTR_VAL(zstr));
-	}
-	else{
-		php_printf("This is my string: %s\n", ZSTR_VAL(arKey));	
-	}
+	// if(val = zend_hash_find(Z_ARRVAL_P(arr), arKey)){
+	// 	zend_string *zstr = zval_get_string(val);
+	// 	php_printf("y=>%s\n", ZSTR_VAL(zstr));
+	// }
+	// else{
+	// 	php_printf("This is my string: %s\n", ZSTR_VAL(arKey));	
+	// }
 
 
 	// 遍历值
 	php_printf("value list is :\n");
-	zend_hash_apply(Z_ARRVAL_P(arr), callback);
+	// zend_hash_apply(Z_ARRVAL_P(arr), callback);
 
 
-	php_printf("key => value list is :\n");
+	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(arr), numKey, key, zval* val){
+		php_printf("numKey:%ld, key:%s, val:%s\n", numKey, ZSTR_VAL(key), Z_STRVAL_P(val));
+
+	}ZEND_HASH_FOREACH_END();
+	// php_printf("key => value list is :\n");
 	// 遍历键和值
-  	zend_hash_apply_with_arguments(Z_ARRVAL_P(arr), callback_args, 0);
+  	// zend_hash_apply_with_arguments(Z_ARRVAL_P(arr), callback_args, 0);
 	return;
 }
 

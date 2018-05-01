@@ -32,6 +32,12 @@ IS_RESOURCE
 
 ### Zend Macros
 ```
+//类似foreach的macros
+ZEND_HASH_FOREACH_KEY_VAL(HashTable *ht, zend_ulong num_key, zend_string* string_key, zval* value){
+
+	}ZEND_HASH_FOREACH_END();
+
+
 Z_TYPE_P(zval*) //zval type 
 
 Z_TYPE_PP(zval**) //zval type 
@@ -41,7 +47,7 @@ Z_LVAL_PP(zval**) //zval long value
 Z_STRLEN_P(zval*)
 
 
-//zend_string init
+//zend_string init php7
 zend_string* zend_string_init(char *, int strLen, 0);
 zend_string_release(zend_string *);
 
